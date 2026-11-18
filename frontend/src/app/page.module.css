@@ -1,0 +1,139 @@
+.page {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  background: #ccc;
+  min-height: 100vh;
+}
+
+.screen {
+  width: 100%;
+  max-width: 420px;
+  min-height: 100vh;
+  background: var(--endo-fond);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Qui êtes-vous ? ── */
+.picker {
+  padding: 32px 20px;
+  gap: 16px;
+}
+
+.pickerTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--endo-framboise);
+  margin-bottom: 8px;
+}
+
+.pickerSub {
+  color: var(--endo-encre);
+  margin-bottom: 16px;
+}
+
+.profilCard {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--endo-creme);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.profilNom {
+  font-weight: 700;
+  color: var(--endo-encre);
+}
+
+.profilRole {
+  font-size: 13px;
+  color: #666;
+}
+
+/* ── Accueil ── */
+.siteHeader {
+  background: #fff;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e0d9ce;
+}
+
+.logoText {
+  font-weight: 700;
+  color: var(--endo-framboise);
+}
+
+.changerProfil {
+  font-size: 12px;
+  color: var(--endo-framboise);
+  background: var(--endo-creme);
+  border: none;
+  border-radius: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.hero {
+  background: var(--endo-framboise);
+  color: #fff;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.heroTitle {
+  font-size: 24px;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+
+.heroSub {
+  font-size: 14px;
+  opacity: 0.92;
+}
+
+.chatbotCard {
+  margin: 20px 16px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.chatbotCardTitle {
+  font-weight: 700;
+  color: var(--endo-encre);
+  margin-bottom: 8px;
+}
+
+.chatbotCardBody {
+  font-size: 14px;
+  color: #444;
+  margin-bottom: 14px;
+}
+
+.btnPrimary {
+  display: inline-block;
+  background: var(--endo-orange);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 24px;
+  padding: 10px 18px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.chatbotStub {
+  margin: 20px 16px;
+  padding: 16px;
+}
