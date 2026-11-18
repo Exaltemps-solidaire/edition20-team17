@@ -191,6 +191,29 @@
   - Vérification développeur en attente : `$URL_PUBLIQUE/health` et `$URL_PUBLIQUE/sante` depuis le navigateur (non bloquant, déjà signalé).
   - ⚠️ Parcours complet livré (accueil → qualification → diagnostic & ressenti → niveau d'interrogation → résultats). Avec ~24 minutes annoncées à ce début d'itération et le temps déjà consommé par la publication, il reste très peu de marge : recommandation de consacrer la suite à la stabilisation pour le pitch plutôt qu'à une itération 7 nouvelle (✂️ à confirmer avec le développeur).
 
-## Si le temps le permet encore
+## Itération 7 : stabilisation avant le pitch
 
-Stabilisation finale avant le pitch (corrections visuelles, vérification de bout en bout du script de démo, pas de nouvelle fonctionnalité).
+**Plan validé** par le développeur (2026-11-18, ~20-25 minutes restantes) : pas de nouvelle fonctionnalité, uniquement de la stabilisation.
+
+- **Dans le périmètre** : relecture du code du parcours complet pour repérer bugs/incohérences, correction de ce qui est trouvé, vérification de bout en bout (tests, typecheck, lint, build, déploiement), mise à jour du script de démo si besoin.
+- **Hors périmètre** : toute nouvelle fonctionnalité.
+- **Critères d'acceptation** :
+  - Étant donné le parcours complet (accueil → qualification → diagnostic & ressenti → niveau d'interrogation → résultats), quand on le relit, alors aucune incohérence bloquante n'est trouvée, ou chaque bug trouvé est corrigé.
+  - Étant donné le code modifié, quand on lance `npm test`, `tsc --noEmit` et `eslint`, alors tout passe sans erreur.
+- **Codage estimé** : variable selon ce qui est trouvé, plafonné à 10 minutes.
+- **Tests unitaires prévus** : aucun nouveau a priori (pas de nouvelle logique métier), sauf si un bug de logique est corrigé.
+- **Temps restant annoncé au début** : ~20-25 minutes, demandé le 2026-11-18 à 18:01.
+- **Bilan** :
+  - Codage réel : 1 minute (pas de dépassement).
+  - Relecture du parcours complet (`page.tsx`) : aucune incohérence bloquante (routage entre écrans cohérent, tous les noms de classes CSS utilisés sont bien définis). Seul point trouvé : une règle CSS `.chatbotStub` devenue morte depuis l'itération 2 (écran stub remplacé) — supprimée.
+  - `npm test`, `npx tsc --noEmit`, `npm run lint` (root + frontend) : tous passent sans erreur.
+  - Bonus (hors périmètre codage, aucune ligne de code) : les dépendances système de Chromium manquaient pour Playwright depuis l'itération 2 (`libnspr4.so` et autres) ; installées via `npx playwright install-deps chromium` (sudo disponible sur cette machine). La démo `e2e/demo.spec.ts` rejoue maintenant tout le parcours de bout en bout avec succès, en local et contre le déploiement reconstruit.
+  - Critères d'acceptation : les 2 satisfaits.
+  - Reporté : aucun.
+  - Bloqué par le harnais : rien.
+  - **Modifications** :
+    - `frontend/src/app/page.module.css` : suppression de la règle `.chatbotStub` (morte).
+  - Déploiement : image frontend reconstruite et poussée, `podman compose up -d --force-recreate`. Vérifié localement : `localhost:8080/` (200), `/health` et `/sante` (200), démo Playwright verte.
+  - Signal PM Lab : version 7 enregistrée avec succès (`./scripts/signaler-version.sh 7`).
+  - Vérification développeur en attente : `$URL_PUBLIQUE/health` et `$URL_PUBLIQUE/sante` depuis le navigateur (non bloquant, déjà signalé).
+  - ⚠️ Le parcours complet est stable et démontrable. Avec le temps restant probablement très court maintenant, je recommande de ne plus coder et de garder la suite pour le pitch (pas d'itération 8), sauf retour bloquant de l'équipe en tour de test.

@@ -133,11 +133,6 @@
   font: inherit;
 }
 
-.chatbotStub {
-  margin: 20px 16px;
-  padding: 16px;
-}
-
 /* ── Chatbot : en-tête et messages ── */
 .chatHeader {
   background: #fff;
