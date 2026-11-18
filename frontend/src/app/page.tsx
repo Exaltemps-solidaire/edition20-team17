@@ -165,7 +165,7 @@ function EcranDiagnosticRessenti({
   onToggleMention,
   description,
   onChangerDescription,
-  apercuPhoto,
+  nomPhoto,
   erreurPhoto,
   onChoisirPhoto,
   ressentisChoisis,
@@ -176,7 +176,7 @@ function EcranDiagnosticRessenti({
   onToggleMention: (mention: string) => void;
   description: string;
   onChangerDescription: (description: string) => void;
-  apercuPhoto: string | null;
+  nomPhoto: string | null;
   erreurPhoto: string | null;
   onChoisirPhoto: (fichier: File) => void;
   ressentisChoisis: Set<string>;
@@ -241,10 +241,7 @@ function EcranDiagnosticRessenti({
           }}
         />
         {erreurPhoto && <p className={styles.photoErreur}>{erreurPhoto}</p>}
-        {apercuPhoto && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={apercuPhoto} alt="Aperçu de la photo choisie" className={styles.photoApercu} />
-        )}
+        {nomPhoto && <p className={styles.photoNom}>{nomPhoto}</p>}
       </div>
       <div className={styles.chatMessages}>
         <div className={styles.msgBot}>
@@ -276,7 +273,7 @@ export default function Home() {
   const [vue, setVue] = useState<Vue>("accueil");
   const [mentionsChoisies, setMentionsChoisies] = useState<Set<string>>(new Set());
   const [description, setDescription] = useState("");
-  const [apercuPhoto, setApercuPhoto] = useState<string | null>(null);
+  const [nomPhoto, setNomPhoto] = useState<string | null>(null);
   const [erreurPhoto, setErreurPhoto] = useState<string | null>(null);
   const [ressentisChoisis, setRessentisChoisis] = useState<Set<string>>(new Set());
 
@@ -295,11 +292,11 @@ export default function Home() {
   function choisirPhoto(fichier: File) {
     if (!estImageValide(fichier.type)) {
       setErreurPhoto("Ce fichier n'est pas une image.");
-      setApercuPhoto(null);
+      setNomPhoto(null);
       return;
     }
     setErreurPhoto(null);
-    setApercuPhoto(URL.createObjectURL(fichier));
+    setNomPhoto(fichier.name);
   }
 
   if (!profil) {
@@ -341,7 +338,7 @@ export default function Home() {
           }
           description={description}
           onChangerDescription={setDescription}
-          apercuPhoto={apercuPhoto}
+          nomPhoto={nomPhoto}
           erreurPhoto={erreurPhoto}
           onChoisirPhoto={choisirPhoto}
           ressentisChoisis={ressentisChoisis}

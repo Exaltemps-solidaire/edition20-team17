@@ -114,12 +114,36 @@
   - Signal PM Lab : version 3 enregistrée avec succès (`./scripts/signaler-version.sh 3`).
   - Vérification développeur en attente : `$URL_PUBLIQUE/health` et `$URL_PUBLIQUE/sante` depuis le navigateur (non bloquant, déjà signalé).
 
-## Itération 4 : le niveau d'interrogation se règle par thème et produit un score
+## Itération 4 : la photo choisie s'affiche par son nom, sans aperçu image
+
+**⚠️ Correctif demandé par le développeur** (2026-11-18, temps restant annoncé : ~25 minutes), sur l'écran livré à l'itération 3. Décale « jauges/score » en itération 5 et « résultats » en itération 6.
+
+- **Dans le périmètre** : remplacer l'aperçu visuel de la photo (balise `<img>`) par le simple nom du fichier choisi, sur l'écran « Diagnostic & ressenti ».
+- **Hors périmètre** : tout le reste de l'écran (texte libre, cases à cocher, ressentis) ne change pas.
+- **Critères d'acceptation** :
+  - Étant donné une image choisie, quand elle est sélectionnée, alors son nom de fichier s'affiche (plus d'aperçu visuel).
+  - Étant donné un fichier non-image choisi, quand il est sélectionné, alors le message de rejet s'affiche toujours et aucun nom n'apparaît.
+- **Codage estimé** : 2 minutes.
+- **Tests unitaires prévus** : aucun nouveau (pas de nouvelle logique métier ; `estImageValide` déjà testé en itération 3 reste inchangé).
+- **Temps restant annoncé au début** : ~25 minutes, demandé le 2026-11-18 à 17:45.
+- **Bilan** :
+  - Codage réel : 1 minute (pas de dépassement).
+  - Critères d'acceptation : les 2 satisfaits — le nom du fichier s'affiche à la place de l'aperçu (état renommé `nomPhoto`, stocke `fichier.name` au lieu d'un `URL.createObjectURL`) ; le rejet d'un fichier non-image fonctionne toujours à l'identique.
+  - Reporté : aucun.
+  - Bloqué par le harnais : rien — `npm test` passait (root + frontend, aucun test cassé), aucune borne de déployabilité.
+  - **Modifications** :
+    - `frontend/src/app/page.tsx` : état `nomPhoto` (remplace l'ancien `apercuPhoto`), `choisirPhoto` stocke `fichier.name` au lieu de créer une URL d'objet ; affichage texte au lieu de `<img>`.
+    - `frontend/src/app/page.module.css` : `.photoNom` remplace `.photoApercu`.
+  - Déploiement : image frontend reconstruite et poussée, `podman compose up -d --force-recreate`. Vérifié localement : `localhost:8080/` (200), `/health` et `/sante` (200).
+  - Signal PM Lab : version 4 enregistrée avec succès (`./scripts/signaler-version.sh 4`).
+  - Vérification développeur en attente : `$URL_PUBLIQUE/health` et `$URL_PUBLIQUE/sante` depuis le navigateur (non bloquant, déjà signalé).
+
+## Itération 5 : le niveau d'interrogation se règle par thème et produit un score
 
 - **Dans le périmètre** :
   - Écran « Niveau d'interrogation » : une jauge 1 à 5 par thème (douleur, fertilité, traitements, droits), valeur par défaut neutre.
   - Calcul du score par thème à partir des jauges (logique pure, testable) — pas d'affichage de résultat pour l'instant.
-- **Hors périmètre** : l'écran de résultats et les ressources (itération 5).
+- **Hors périmètre** : l'écran de résultats et les ressources (itération 6).
 - **Critères d'acceptation** :
   - Étant donné l'écran « Diagnostic & ressenti », quand on continue, alors l'écran « Niveau d'interrogation » affiche les 4 thèmes avec une jauge 1-5 chacun.
   - Étant donné des valeurs choisies sur les jauges, quand on les change, alors la valeur affichée se met à jour immédiatement.
@@ -127,12 +151,12 @@
 - **Codage estimé** : 7 minutes.
 - **Tests unitaires prévus** : 1 à 2, sur la fonction de calcul de score.
 
-## Itération 5 : les résultats affichent les ressources selon le score
+## Itération 6 : les résultats affichent les ressources selon le score
 
-- **Dans le périmètre** : écran « Résultats & ressources » — guide « Le diagnostic, et maintenant ? » toujours en premier, puis les thèmes triés par score, avec un comportement simplifié selon le score (4-5 → ressource mise en avant, < 4 → mention plus discrète). Le détail à 3 comportements du prototype (4-5 / 3 / <3) sera réduit si le temps restant après l'itération 4 est trop court (✂️ à confirmer alors).
+- **Dans le périmètre** : écran « Résultats & ressources » — guide « Le diagnostic, et maintenant ? » toujours en premier, puis les thèmes triés par score, avec un comportement simplifié selon le score (4-5 → ressource mise en avant, < 4 → mention plus discrète). Le détail à 3 comportements du prototype (4-5 / 3 / <3) sera réduit si le temps restant après l'itération 5 est trop court (✂️ à confirmer alors).
 - **Hors périmètre** : personnalisation fine du texte par thème au-delà du prototype.
 - **Critères d'acceptation** (3 au plus, à préciser au début de l'itération selon le temps restant réel) :
-  - Étant donné les scores calculés en itération 4, quand on arrive sur l'écran résultats, alors le guide général est visible en premier.
+  - Étant donné les scores calculés en itération 5, quand on arrive sur l'écran résultats, alors le guide général est visible en premier.
   - Étant donné un thème à score élevé, quand on consulte les résultats, alors sa ressource est mise en avant visuellement.
 - **Codage estimé** : 7 minutes.
 
