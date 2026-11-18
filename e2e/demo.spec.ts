@@ -45,4 +45,9 @@ test("Démo : le cas passant", async ({ page }) => {
   await test.step("Je règle mon niveau d'interrogation sur la douleur", async () => {
     await page.getByRole("button", { name: "La douleur au quotidien : 5" }).click();
   });
+
+  await test.step("Je vois mes ressources, la douleur mise en avant", async () => {
+    await page.getByRole("button", { name: "Voir mes ressources →" }).click();
+    await expect(page.getByText("Priorité haute")).toBeVisible();
+  });
 });

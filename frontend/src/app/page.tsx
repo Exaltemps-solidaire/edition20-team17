@@ -6,6 +6,14 @@ import { PROFILS, trouverProfil, type Profil } from "../lib/profils";
 import { ecranApresQualification, type ReponseDiagnostic } from "../lib/qualification";
 import { estImageValide } from "../lib/media";
 import { clamperScore, scoresInitiaux, THEMES, type Scores, type Theme } from "../lib/score";
+import { estPrioritaire, trierThemesParScore } from "../lib/resultats";
+
+const RESSOURCE_PAR_THEME: Record<Theme, string> = {
+  douleur: "Fiche réflexe « Gérer la douleur »",
+  fertilite: "Fiche « Fertilité et endométriose »",
+  traitements: "Guide des traitements et de la chirurgie",
+  droits: "Fiche droits : ALD, travail, RQTH",
+};
 
 const MENTIONS_MEDECIN = [
   "Un traitement hormonal a été évoqué",
@@ -278,10 +286,12 @@ function EcranNiveauInterrogation({
   scores,
   onChangerScore,
   onRetour,
+  onContinuer,
 }: {
   scores: Scores;
   onChangerScore: (theme: Theme, valeur: number) => void;
   onRetour: () => void;
+  onContinuer: () => void;
 }) {
   return (
     <section className={styles.screen}>
@@ -320,11 +330,64 @@ function EcranNiveauInterrogation({
           </div>
         ))}
       </div>
+      <div className={styles.chatChoices}>
+        <button type="button" className={styles.btnPrimary} onClick={onContinuer}>
+          Voir mes ressources →
+        </button>
+      </div>
     </section>
   );
 }
 
-type Vue = "accueil" | "qualification" | "renvoi-soignant" | "diagnostic" | "niveau-interrogation";
+function EcranResultats({ scores, onRetour }: { scores: Scores; onRetour: () => void }) {
+  const themesTries = trierThemesParScore(scores);
+  return (
+    <section className={styles.screen}>
+      <div className={styles.chatHeader}>
+        <button type="button" className={styles.backBtn} onClick={onRetour} aria-label="Retour">
+          ←
+        </button>
+        <div className={styles.chatHeaderName}>Vos ressources ENDOmind</div>
+      </div>
+      <div className={styles.chatMessages}>
+        <div className={styles.msgBot}>
+          Voici les ressources ENDOmind qui correspondent à vos interrogations. Les sujets qui
+          vous préoccupent le plus sont mis en avant.
+        </div>
+      </div>
+      <div className={styles.resultatsList}>
+        <div className={`${styles.resultatCard} ${styles.resultatCardGuide}`}>
+          <div className={styles.resultatLabel}>📖 Votre point de départ</div>
+          <div className={styles.resultatTitre}>
+            Guide « Le diagnostic, et maintenant&nbsp;? »
+          </div>
+        </div>
+        {themesTries.map((theme) => (
+          <div
+            key={theme.id}
+            className={`${styles.resultatCard} ${
+              estPrioritaire(theme.score) ? styles.resultatCardPrioritaire : styles.resultatCardDiscret
+            }`}
+          >
+            <div className={styles.resultatLabel}>
+              {estPrioritaire(theme.score) ? "🔥 Priorité haute" : theme.label}
+            </div>
+            <div className={styles.resultatTitre}>{RESSOURCE_PAR_THEME[theme.id]}</div>
+            <div className={styles.resultatScore}>{theme.score}/5</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+type Vue =
+  | "accueil"
+  | "qualification"
+  | "renvoi-soignant"
+  | "diagnostic"
+  | "niveau-interrogation"
+  | "resultats";
 
 export default function Home() {
   const [profilId, setProfilId] = useState<string | null>(null);
@@ -419,8 +482,12 @@ export default function Home() {
           scores={scores}
           onChangerScore={changerScore}
           onRetour={() => setVue("diagnostic")}
+          onContinuer={() => setVue("resultats")}
         />
       );
+      break;
+    case "resultats":
+      ecran = <EcranResultats scores={scores} onRetour={() => setVue("niveau-interrogation")} />;
       break;
   }
 

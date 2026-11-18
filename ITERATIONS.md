@@ -174,6 +174,22 @@
   - Étant donné les scores calculés en itération 5, quand on arrive sur l'écran résultats, alors le guide général est visible en premier.
   - Étant donné un thème à score élevé, quand on consulte les résultats, alors sa ressource est mise en avant visuellement.
 - **Codage estimé** : 7 minutes.
+- **Temps restant annoncé au début** : 24 minutes, demandé le 2026-11-18 à 17:54.
+- **Bilan** :
+  - Codage réel : 1 minute (pas de dépassement).
+  - Critères d'acceptation : les 2 satisfaits — le guide général apparaît toujours en premier ; les thèmes à score ≥ 4 (`estPrioritaire`, testée) sont mis en avant (bordure orange, bandeau « Priorité haute »), les autres en affichage plus discret, le tout trié par score décroissant (`trierThemesParScore`, testée).
+  - Reporté : aucun.
+  - Bloqué par le harnais : rien — `npm test` passait (root + frontend, 3 nouveaux tests sur `estPrioritaire`/`trierThemesParScore`), aucune borne de déployabilité.
+  - Démo Playwright : même limite environnementale que les itérations précédentes, non bloquant. Étape « je vois mes ressources, la douleur mise en avant » ajoutée.
+  - **Modifications** :
+    - `frontend/src/lib/resultats.ts` + `resultats.test.ts` : `estPrioritaire`, `trierThemesParScore` (3 tests) — sert les critères 1 et 2.
+    - `frontend/src/app/page.tsx` : ajout de `EcranResultats`, bouton « Voir mes ressources → » sur l'écran Niveau d'interrogation, mapping statique thème→ressource.
+    - `frontend/src/app/page.module.css` : styles des cartes de résultats (guide, prioritaire, discret).
+    - `e2e/demo.spec.ts` : étape « je vois mes ressources… ».
+  - Déploiement : image frontend reconstruite et poussée, `podman compose up -d --force-recreate`. Vérifié localement : `localhost:8080/` (200), `/health` et `/sante` (200).
+  - Signal PM Lab : version 6 enregistrée avec succès (`./scripts/signaler-version.sh 6`).
+  - Vérification développeur en attente : `$URL_PUBLIQUE/health` et `$URL_PUBLIQUE/sante` depuis le navigateur (non bloquant, déjà signalé).
+  - ⚠️ Parcours complet livré (accueil → qualification → diagnostic & ressenti → niveau d'interrogation → résultats). Avec ~24 minutes annoncées à ce début d'itération et le temps déjà consommé par la publication, il reste très peu de marge : recommandation de consacrer la suite à la stabilisation pour le pitch plutôt qu'à une itération 7 nouvelle (✂️ à confirmer avec le développeur).
 
 ## Si le temps le permet encore
 
