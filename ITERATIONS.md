@@ -150,6 +150,21 @@
   - Étant donné 4 valeurs de jauge, quand le score est calculé, alors chaque thème a un score 1-5 correct (fonction pure testée).
 - **Codage estimé** : 7 minutes.
 - **Tests unitaires prévus** : 1 à 2, sur la fonction de calcul de score.
+- **Temps restant annoncé au début** : 30 minutes, demandé le 2026-11-18 à 17:49.
+- **Bilan** :
+  - Codage réel : 1 minute (pas de dépassement).
+  - Critères d'acceptation : les 3 satisfaits — l'écran « Niveau d'interrogation » affiche les 4 thèmes avec une jauge 1-5 chacun (valeur par défaut 3) ; cliquer une étape met à jour l'affichage immédiatement ; `clamperScore` (testée) garantit un score toujours compris entre 1 et 5.
+  - Reporté : aucun. L'écran de résultats reste en itération 6, comme prévu.
+  - Bloqué par le harnais : rien — `npm test` passait (root + frontend, 3 nouveaux tests sur `clamperScore`), aucune borne de déployabilité.
+  - Démo Playwright : même limite environnementale que les itérations précédentes (`libnspr4.so` manquant), non bloquant. Étapes « je continue vers le niveau d'interrogation » et « je règle mon niveau d'interrogation sur la douleur » ajoutées malgré tout.
+  - **Modifications** :
+    - `frontend/src/lib/score.ts` + `score.test.ts` : thèmes, score initial, `clamperScore` (3 tests) — sert le critère 3.
+    - `frontend/src/app/page.tsx` : ajout de `EcranNiveauInterrogation`, bouton « Continuer → » sur l'écran Diagnostic & ressenti, état `scores` porté par `Home` — sert les critères 1 et 2.
+    - `frontend/src/app/page.module.css` : styles des jauges par thème.
+    - `e2e/demo.spec.ts` : étapes « je continue… » et « je règle mon niveau d'interrogation… ».
+  - Déploiement : image frontend reconstruite et poussée, `podman compose up -d --force-recreate`. Vérifié localement : `localhost:8080/` (200), `/health` et `/sante` (200).
+  - Signal PM Lab : version 5 enregistrée avec succès (`./scripts/signaler-version.sh 5`).
+  - Vérification développeur en attente : `$URL_PUBLIQUE/health` et `$URL_PUBLIQUE/sante` depuis le navigateur (non bloquant, déjà signalé).
 
 ## Itération 6 : les résultats affichent les ressources selon le score
 

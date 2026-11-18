@@ -296,3 +296,45 @@
   padding: 6px 10px;
   display: inline-block;
 }
+
+/* ── Niveau d'interrogation ── */
+.themesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px 20px;
+}
+
+.themeItem {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.themeLabel {
+  font-weight: 700;
+  color: var(--endo-encre);
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.themeSteps {
+  display: flex;
+  gap: 6px;
+}
+
+.themeStep {
+  flex: 1;
+  border: 1px solid var(--endo-creme);
+  background: var(--endo-fond);
+  border-radius: 8px;
+  padding: 8px 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.themeStepActive {
+  background: var(--endo-framboise);
+  color: #fff;
+  border-color: var(--endo-framboise);
+}

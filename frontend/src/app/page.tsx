@@ -5,6 +5,7 @@ import styles from "./page.module.css";
 import { PROFILS, trouverProfil, type Profil } from "../lib/profils";
 import { ecranApresQualification, type ReponseDiagnostic } from "../lib/qualification";
 import { estImageValide } from "../lib/media";
+import { clamperScore, scoresInitiaux, THEMES, type Scores, type Theme } from "../lib/score";
 
 const MENTIONS_MEDECIN = [
   "Un traitement hormonal a été évoqué",
@@ -171,6 +172,7 @@ function EcranDiagnosticRessenti({
   ressentisChoisis,
   onToggleRessenti,
   onRetour,
+  onContinuer,
 }: {
   mentionsChoisies: Set<string>;
   onToggleMention: (mention: string) => void;
@@ -182,6 +184,7 @@ function EcranDiagnosticRessenti({
   ressentisChoisis: Set<string>;
   onToggleRessenti: (ressenti: string) => void;
   onRetour: () => void;
+  onContinuer: () => void;
 }) {
   return (
     <section className={styles.screen}>
@@ -262,11 +265,66 @@ function EcranDiagnosticRessenti({
           </button>
         ))}
       </div>
+      <div className={styles.chatChoices}>
+        <button type="button" className={styles.btnPrimary} onClick={onContinuer}>
+          Continuer →
+        </button>
+      </div>
     </section>
   );
 }
 
-type Vue = "accueil" | "qualification" | "renvoi-soignant" | "diagnostic";
+function EcranNiveauInterrogation({
+  scores,
+  onChangerScore,
+  onRetour,
+}: {
+  scores: Scores;
+  onChangerScore: (theme: Theme, valeur: number) => void;
+  onRetour: () => void;
+}) {
+  return (
+    <section className={styles.screen}>
+      <div className={styles.chatHeader}>
+        <button type="button" className={styles.backBtn} onClick={onRetour} aria-label="Retour">
+          ←
+        </button>
+        <div className={styles.chatHeaderName}>Assistant ENDOmind</div>
+      </div>
+      <div className={styles.chatMessages}>
+        <div className={styles.msgBot}>
+          <strong>Pour chaque thème, indiquez à quel point vous vous interrogez&nbsp;:</strong>
+          <br />
+          <span style={{ fontSize: 13, color: "#666" }}>1 = peu d&apos;interrogation · 5 = beaucoup</span>
+        </div>
+      </div>
+      <div className={styles.themesList}>
+        {THEMES.map((theme) => (
+          <div key={theme.id} className={styles.themeItem}>
+            <div className={styles.themeLabel}>{theme.label}</div>
+            <div className={styles.themeSteps}>
+              {[1, 2, 3, 4, 5].map((valeur) => (
+                <button
+                  key={valeur}
+                  type="button"
+                  aria-label={`${theme.label} : ${valeur}`}
+                  className={`${styles.themeStep} ${
+                    valeur <= scores[theme.id] ? styles.themeStepActive : ""
+                  }`}
+                  onClick={() => onChangerScore(theme.id, valeur)}
+                >
+                  {valeur}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+type Vue = "accueil" | "qualification" | "renvoi-soignant" | "diagnostic" | "niveau-interrogation";
 
 export default function Home() {
   const [profilId, setProfilId] = useState<string | null>(null);
@@ -276,6 +334,7 @@ export default function Home() {
   const [nomPhoto, setNomPhoto] = useState<string | null>(null);
   const [erreurPhoto, setErreurPhoto] = useState<string | null>(null);
   const [ressentisChoisis, setRessentisChoisis] = useState<Set<string>>(new Set());
+  const [scores, setScores] = useState<Scores>(scoresInitiaux());
 
   const profil = profilId ? trouverProfil(profilId) : undefined;
 
@@ -297,6 +356,10 @@ export default function Home() {
     }
     setErreurPhoto(null);
     setNomPhoto(fichier.name);
+  }
+
+  function changerScore(theme: Theme, valeur: number) {
+    setScores((precedent) => ({ ...precedent, [theme]: clamperScore(valeur) }));
   }
 
   if (!profil) {
@@ -346,6 +409,16 @@ export default function Home() {
             setRessentisChoisis((set) => basculer(set, ressenti))
           }
           onRetour={() => setVue("qualification")}
+          onContinuer={() => setVue("niveau-interrogation")}
+        />
+      );
+      break;
+    case "niveau-interrogation":
+      ecran = (
+        <EcranNiveauInterrogation
+          scores={scores}
+          onChangerScore={changerScore}
+          onRetour={() => setVue("diagnostic")}
         />
       );
       break;

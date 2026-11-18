@@ -32,4 +32,17 @@ test("Démo : le cas passant", async ({ page }) => {
   await test.step("Je décris la situation avec mes mots", async () => {
     await page.getByPlaceholder("Ce que le médecin m'a dit...").fill("Tout va bien se passer.");
   });
+
+  await test.step("Je continue vers le niveau d'interrogation", async () => {
+    await page.getByRole("button", { name: "Continuer →" }).click();
+    await expect(
+      page.getByText("Pour chaque thème, indiquez à quel point vous vous interrogez", {
+        exact: false,
+      }),
+    ).toBeVisible();
+  });
+
+  await test.step("Je règle mon niveau d'interrogation sur la douleur", async () => {
+    await page.getByRole("button", { name: "La douleur au quotidien : 5" }).click();
+  });
 });
