@@ -3,6 +3,25 @@
 import { useState } from "react";
 import styles from "./page.module.css";
 import { PROFILS, trouverProfil, type Profil } from "../lib/profils";
+import { ecranApresQualification, type ReponseDiagnostic } from "../lib/qualification";
+
+const MENTIONS_MEDECIN = [
+  "Un traitement hormonal a été évoqué",
+  "Une intervention chirurgicale a été mentionnée",
+  "La question de la fertilité a été abordée",
+  "Je ne me souviens pas bien de ce qui a été dit",
+];
+
+const RESSENTIS = [
+  "😰 Inquiète",
+  "😮‍💨 Soulagée",
+  "😢 Triste",
+  "😤 En colère",
+  "😶 Perdue",
+  "💪 Prête à agir",
+  "🤷 Incertaine",
+  "😌 Sereine",
+];
 
 function EcranChoixProfil({ onChoisir }: { onChoisir: (profil: Profil) => void }) {
   return (
@@ -69,27 +88,163 @@ function EcranAccueil({
   );
 }
 
-function EcranChatbotAVenir({ onRetour }: { onRetour: () => void }) {
+function EcranQualification({
+  onRetour,
+  onRepondre,
+}: {
+  onRetour: () => void;
+  onRepondre: (reponse: ReponseDiagnostic) => void;
+}) {
   return (
     <section className={styles.screen}>
-      <div className={styles.siteHeader}>
-        <span className={styles.logoText}>ENDOmind</span>
+      <div className={styles.chatHeader}>
+        <button type="button" className={styles.backBtn} onClick={onRetour} aria-label="Retour">
+          ←
+        </button>
+        <div className={styles.chatHeaderName}>Assistant ENDOmind</div>
       </div>
-      <div className={styles.chatbotStub}>
-        <p>Le questionnaire Endo&apos;chat arrive dans une prochaine itération.</p>
-        <button type="button" className={styles.btnPrimary} onClick={onRetour}>
-          ← Retour à l&apos;accueil
+      <div className={styles.chatMessages}>
+        <div className={styles.msgBot}>
+          Bonjour et bienvenue. Je suis là pour vous orienter vers les ressources d&apos;ENDOmind
+          qui correspondent à votre situation.
+        </div>
+        <div className={styles.msgBot}>
+          <strong>Avez-vous reçu un diagnostic d&apos;endométriose&nbsp;?</strong>
+        </div>
+      </div>
+      <div className={styles.chatChoices}>
+        <button
+          type="button"
+          className={styles.btnPrimary}
+          onClick={() => onRepondre("oui")}
+        >
+          Oui, j&apos;ai été diagnostiquée
+        </button>
+        <button type="button" className={styles.btnSecondary} onClick={() => onRepondre("non")}>
+          Non, pas encore
         </button>
       </div>
     </section>
   );
 }
 
+function EcranRenvoiSoignant({ onRetour }: { onRetour: () => void }) {
+  return (
+    <section className={styles.screen}>
+      <div className={styles.chatHeader}>
+        <button type="button" className={styles.backBtn} onClick={onRetour} aria-label="Retour">
+          ←
+        </button>
+        <div className={styles.chatHeaderName}>Assistant ENDOmind</div>
+      </div>
+      <div className={styles.chatMessages}>
+        <div className={styles.msgBot}>
+          Merci pour votre réponse. Je ne suis pas en mesure de vous aider à obtenir un diagnostic
+          — c&apos;est le rôle de votre médecin ou gynécologue.
+        </div>
+        <div className={styles.msgBot}>
+          Si vous ressentez des symptômes qui vous inquiètent, voici ce que vous pouvez faire :
+        </div>
+      </div>
+      <div className={styles.orientBox}>
+        <div className={styles.orientTitle}>
+          Parlez-en à un·e professionnel·le de santé formé·e
+        </div>
+        <p>
+          Vous pouvez consulter la <strong>carte des filières de soins</strong> d&apos;ENDOmind
+          pour trouver un·e spécialiste proche de chez vous.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function EcranDiagnosticRessenti({
+  mentionsChoisies,
+  onToggleMention,
+  ressentisChoisis,
+  onToggleRessenti,
+  onRetour,
+}: {
+  mentionsChoisies: Set<string>;
+  onToggleMention: (mention: string) => void;
+  ressentisChoisis: Set<string>;
+  onToggleRessenti: (ressenti: string) => void;
+  onRetour: () => void;
+}) {
+  return (
+    <section className={styles.screen}>
+      <div className={styles.chatHeader}>
+        <button type="button" className={styles.backBtn} onClick={onRetour} aria-label="Retour">
+          ←
+        </button>
+        <div className={styles.chatHeaderName}>Assistant ENDOmind</div>
+      </div>
+      <div className={styles.chatMessages}>
+        <div className={styles.msgUser}>Oui, j&apos;ai été diagnostiquée</div>
+        <div className={styles.msgBot}>
+          Merci. Recevoir un diagnostic, ça soulage et ça fait peur en même temps. Vous êtes au
+          bon endroit.
+        </div>
+        <div className={styles.msgBot}>
+          <strong>Qu&apos;est-ce que le médecin vous a dit&nbsp;?</strong> (cochez ce qui vous a
+          été mentionné)
+        </div>
+      </div>
+      <div className={styles.mentionsList}>
+        {MENTIONS_MEDECIN.map((mention) => (
+          <label key={mention} className={styles.mentionLabel}>
+            <input
+              type="checkbox"
+              checked={mentionsChoisies.has(mention)}
+              onChange={() => onToggleMention(mention)}
+            />
+            {mention}
+          </label>
+        ))}
+      </div>
+      <div className={styles.chatMessages}>
+        <div className={styles.msgBot}>
+          <strong>Comment vous sentez-vous face à cette nouvelle&nbsp;?</strong>
+        </div>
+      </div>
+      <div className={styles.emotionsGrid}>
+        {RESSENTIS.map((ressenti) => (
+          <button
+            key={ressenti}
+            type="button"
+            className={`${styles.emotionBtn} ${
+              ressentisChoisis.has(ressenti) ? styles.emotionBtnSelected : ""
+            }`}
+            onClick={() => onToggleRessenti(ressenti)}
+          >
+            {ressenti}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+type Vue = "accueil" | "qualification" | "renvoi-soignant" | "diagnostic";
+
 export default function Home() {
   const [profilId, setProfilId] = useState<string | null>(null);
-  const [vue, setVue] = useState<"accueil" | "chatbot">("accueil");
+  const [vue, setVue] = useState<Vue>("accueil");
+  const [mentionsChoisies, setMentionsChoisies] = useState<Set<string>>(new Set());
+  const [ressentisChoisis, setRessentisChoisis] = useState<Set<string>>(new Set());
 
   const profil = profilId ? trouverProfil(profilId) : undefined;
+
+  function basculer(set: Set<string>, valeur: string) {
+    const copie = new Set(set);
+    if (copie.has(valeur)) {
+      copie.delete(valeur);
+    } else {
+      copie.add(valeur);
+    }
+    return copie;
+  }
 
   if (!profil) {
     return (
@@ -99,17 +254,44 @@ export default function Home() {
     );
   }
 
-  return (
-    <div className={styles.page}>
-      {vue === "accueil" ? (
+  let ecran;
+  switch (vue) {
+    case "accueil":
+      ecran = (
         <EcranAccueil
           profil={profil}
           onChangerProfil={() => setProfilId(null)}
-          onDemarrerChatbot={() => setVue("chatbot")}
+          onDemarrerChatbot={() => setVue("qualification")}
         />
-      ) : (
-        <EcranChatbotAVenir onRetour={() => setVue("accueil")} />
-      )}
-    </div>
-  );
+      );
+      break;
+    case "qualification":
+      ecran = (
+        <EcranQualification
+          onRetour={() => setVue("accueil")}
+          onRepondre={(reponse) => setVue(ecranApresQualification(reponse))}
+        />
+      );
+      break;
+    case "renvoi-soignant":
+      ecran = <EcranRenvoiSoignant onRetour={() => setVue("qualification")} />;
+      break;
+    case "diagnostic":
+      ecran = (
+        <EcranDiagnosticRessenti
+          mentionsChoisies={mentionsChoisies}
+          onToggleMention={(mention) =>
+            setMentionsChoisies((set) => basculer(set, mention))
+          }
+          ressentisChoisis={ressentisChoisis}
+          onToggleRessenti={(ressenti) =>
+            setRessentisChoisis((set) => basculer(set, ressenti))
+          }
+          onRetour={() => setVue("qualification")}
+        />
+      );
+      break;
+  }
+
+  return <div className={styles.page}>{ecran}</div>;
 }

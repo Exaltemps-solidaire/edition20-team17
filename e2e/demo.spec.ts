@@ -17,4 +17,15 @@ test("Démo : le cas passant", async ({ page }) => {
       page.getByText("Trouvez la ressource qui vous correspond en quelques questions"),
     ).toBeVisible();
   });
+
+  await test.step("Je démarre le questionnaire et réponds oui au diagnostic", async () => {
+    await page.getByRole("button", { name: "Démarrer le questionnaire →" }).click();
+    await page.getByRole("button", { name: "Oui, j'ai été diagnostiquée" }).click();
+  });
+
+  await test.step("Je vois l'écran diagnostic & ressenti", async () => {
+    await expect(
+      page.getByText("Qu'est-ce que le médecin vous a dit", { exact: false }),
+    ).toBeVisible();
+  });
 });

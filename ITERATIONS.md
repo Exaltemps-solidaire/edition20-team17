@@ -62,12 +62,50 @@
 - **Fichiers prévus** : composant écran « Êtes-vous diagnostiquée ? », composant « renvoi soignant », composant « Diagnostic & ressenti », état de conversation partagé (~1 fichier).
 - **Tests unitaires prévus** : 1 à 2, sur l'aiguillage OUI/NON (logique pure, pas le rendu).
 - **Étapes ajoutées à la démo** : répondre OUI à la qualification, voir l'écran Diagnostic & ressenti ; rejouer en répondant NON pour voir le renvoi soignant.
-- **Bilan** : _à remplir en fin d'itération_
+- **Temps restant annoncé au début** : 40 minutes, demandé le 2026-11-18 à 17:20.
+- **Bilan** :
+  - Codage réel : 3 minutes (pas de dépassement).
+  - ✂️ Remarque taille non bloquante : le périmètre couvre 3 écrans nouveaux (qualification, renvoi soignant, diagnostic & ressenti), au-delà de la règle « un écran nouveau au plus ». Accepté tel quel car chaque écran est un simple état de vue dans la page unique déjà en place (même patron que l'itération 1), le codage est resté largement sous le budget (3 min), et le plan avait déjà été validé par le développeur à l'itération précédente.
+  - Critères d'acceptation : les 3 satisfaits — NON mène au renvoi soignant et arrête le parcours ; OUI mène à l'écran Diagnostic & ressenti (cases à cocher + choix de ressenti, fidèles au prototype plutôt qu'au résumé "champ texte + jauge" du plan) ; la saisie reste en mémoire tant que le composant ne se démonte pas (état React porté par `Home`).
+  - Reporté : aucun.
+  - Bloqué par le harnais : rien — `npm test` passait (root + frontend), aucun secret détecté, le hook de signal n'a pas refusé l'appel.
+  - Incident hors code : un `podman pull` de test a déclenché la limite de débit Docker Hub anonyme (`toomanyrequests`) ; sans conséquence car `node:24-alpine` et `nginx:1.27-alpine` étaient déjà en cache local depuis l'itération 1, donc le build de l'itération n'a pas eu besoin de Docker Hub.
+  - Démo Playwright (`npm run demo`, hors DoD) : échec environnemental, pas applicatif — `chrome-headless-shell` installé mais `libnspr4.so` manquant sur cette machine. Signalé, non bloquant pour la publication.
+  - **Modifications** :
+    - `frontend/src/lib/qualification.ts` + `qualification.test.ts` : logique pure d'aiguillage OUI/NON (2 tests) — sert le critère 1.
+    - `frontend/src/app/page.tsx` : ajout des écrans `EcranQualification`, `EcranRenvoiSoignant`, `EcranDiagnosticRessenti`, et de l'état de conversation (`vue`, `mentionsChoisies`, `ressentisChoisis`) dans `Home` — sert les critères 1, 2 et 3.
+    - `frontend/src/app/page.module.css` : styles chatbot (en-tête, bulles, choix, encadré d'orientation, cases à cocher, grille de ressentis).
+    - `e2e/demo.spec.ts` : étapes « je démarre le questionnaire, je réponds oui, je vois l'écran diagnostic & ressenti ».
+  - Déploiement : images reconstruites et poussées (`localhost:5000/team17/{frontend,api}:dev`), `podman compose up -d --force-recreate` relancé. Vérifié localement : `localhost:8080/` (200, contenu à jour), `/health` et `/sante` (200), `localhost:8081/health` (200).
+  - Signal PM Lab : version 2 enregistrée avec succès (`./scripts/signaler-version.sh 2`).
+  - Vérification développeur en attente : `$URL_PUBLIQUE/health` et `$URL_PUBLIQUE/sante` depuis le navigateur (non bloquant pour le signal, déjà envoyé).
 
 ---
 
-## À venir (à détailler au fil de l'eau, selon le temps restant réel après l'itération 2)
+## Itération 3 : le niveau d'interrogation se règle par thème et produit un score
 
-1. Niveau d'interrogation : jauge 1 à 5 sélectionnable, calcul du score à partir des réponses.
-2. Résultats & ressources selon le score : trois comportements (4-5 → ressources directes, 3 → résumé + approfondissement, < 3 → « Souhaites-tu en savoir plus ? »), guide « Le diagnostic, et maintenant ? » systématiquement proposé.
-3. Si le temps le permet encore : stabilisation finale avant le pitch (corrections visuelles, vérification de bout en bout du script de démo, pas de nouvelle fonctionnalité).
+**⚠️ Changement par rapport au plan initial** : l'ancien point « À venir » n°1 regroupait la jauge et le calcul de score ; l'ancien n°2 (écran de résultats) est repoussé en itération 4, pour ne pas dépasser un écran nouveau par itération (règle de taille) alors qu'il ne reste que ~30 minutes après l'itération 2. À valider par le développeur / les cadreurs.
+
+- **Dans le périmètre** :
+  - Écran « Niveau d'interrogation » : une jauge 1 à 5 par thème (douleur, fertilité, traitements, droits), valeur par défaut neutre.
+  - Calcul du score par thème à partir des jauges (logique pure, testable) — pas d'affichage de résultat pour l'instant.
+- **Hors périmètre** : l'écran de résultats et les ressources (itération 4).
+- **Critères d'acceptation** :
+  - Étant donné l'écran « Diagnostic & ressenti », quand on continue, alors l'écran « Niveau d'interrogation » affiche les 4 thèmes avec une jauge 1-5 chacun.
+  - Étant donné des valeurs choisies sur les jauges, quand on les change, alors la valeur affichée se met à jour immédiatement.
+  - Étant donné 4 valeurs de jauge, quand le score est calculé, alors chaque thème a un score 1-5 correct (fonction pure testée).
+- **Codage estimé** : 7 minutes.
+- **Tests unitaires prévus** : 1 à 2, sur la fonction de calcul de score.
+
+## Itération 4 : les résultats affichent les ressources selon le score
+
+- **Dans le périmètre** : écran « Résultats & ressources » — guide « Le diagnostic, et maintenant ? » toujours en premier, puis les thèmes triés par score, avec un comportement simplifié selon le score (4-5 → ressource mise en avant, < 4 → mention plus discrète). Le détail à 3 comportements du prototype (4-5 / 3 / <3) sera réduit si le temps restant après l'itération 3 est trop court (✂️ à confirmer alors).
+- **Hors périmètre** : personnalisation fine du texte par thème au-delà du prototype.
+- **Critères d'acceptation** (3 au plus, à préciser au début de l'itération selon le temps restant réel) :
+  - Étant donné les scores calculés en itération 3, quand on arrive sur l'écran résultats, alors le guide général est visible en premier.
+  - Étant donné un thème à score élevé, quand on consulte les résultats, alors sa ressource est mise en avant visuellement.
+- **Codage estimé** : 7 minutes.
+
+## Si le temps le permet encore
+
+Stabilisation finale avant le pitch (corrections visuelles, vérification de bout en bout du script de démo, pas de nouvelle fonctionnalité).
