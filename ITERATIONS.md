@@ -28,7 +28,21 @@
 - **Fichiers prévus** : `.env.example`, `DEPLOIEMENT.md`, `frontend/src/app/page.tsx` (ou équivalent), un composant « Qui êtes-vous ? », un composant accueil/chatbot teaser.
 - **Tests unitaires prévus** : 1 à 3, sur la sélection de profil (ex. le profil choisi est bien celui affiché ensuite).
 - **Étapes ajoutées à la démo** (`e2e/demo.spec.ts`) : ouvrir l'app, choisir un profil, voir l'accueil avec le chatbot visible.
-- **Bilan** : _à remplir en fin d'itération_
+- **Bilan** :
+  - Codage réel : 3 minutes (pas de dépassement).
+  - Critères d'acceptation : les 2 premiers satisfaits (écran de choix de profil, chatbot visible et cliquable). Le 3e (`/health`/`/sante` sur 8080) vérifié localement (200 sur les deux) ; vérification depuis `$URL_PUBLIQUE` laissée au développeur (DoD point 5, non bloquant).
+  - Reporté : aucun.
+  - Bloqué par le harnais : rien — `npm test` passait, aucun secret détecté.
+  - Incident hors code : le premier démarrage de la plateforme (`gitlab-ci-local`) a échoué après 16 min à cause d'une limite de débit Docker Hub sur l'image `temporalio/ui`, qui a empêché `postgres.internal`, le registre et S3 de démarrer. Un second lancement a réussi (Temporal/IdP/Analytics non nécessaires à cette itération).
+  - **Modifications** :
+    - `.env.example` : liste la seule variable lue à ce stade (`PORT`), pour le contrat de déployabilité.
+    - `DEPLOIEMENT.md` : page de déploiement (services, rien d'externe encore, ce qui est inachevé).
+    - `frontend/src/lib/profils.ts` + `profils.test.ts` : logique de profils en dur et ses tests — sert le critère 1.
+    - `frontend/src/app/page.tsx`, `page.module.css`, `globals.css`, `layout.tsx` : écran « Qui êtes-vous ? » et accueil avec le chatbot Endo'chat — sert les critères 1 et 2.
+    - `frontend/nginx.conf` : repris du gabarit de la plateforme, CSP adaptée (adresses injoignables retirées, `script-src` ajouté pour l'hydration Next.js) — nécessaire pour que l'accueil s'affiche une fois déployé.
+    - `api/Dockerfile`, `frontend/Dockerfile` : images de base qualifiées en `docker.io/library/...`.
+    - `podman-compose.yml` : déploiement des deux services sur 8080/8081.
+    - `e2e/demo.spec.ts` : étapes « je choisis mon profil » et « je vois le chatbot ».
 
 ---
 
