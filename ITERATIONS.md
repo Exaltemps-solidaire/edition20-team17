@@ -82,14 +82,44 @@
 
 ---
 
-## Itération 3 : le niveau d'interrogation se règle par thème et produit un score
+## Itération 3 : l'écran Diagnostic & ressenti accueille un texte libre et un aperçu photo
 
-**⚠️ Changement par rapport au plan initial** : l'ancien point « À venir » n°1 regroupait la jauge et le calcul de score ; l'ancien n°2 (écran de résultats) est repoussé en itération 4, pour ne pas dépasser un écran nouveau par itération (règle de taille) alors qu'il ne reste que ~30 minutes après l'itération 2. À valider par le développeur / les cadreurs.
+**⚠️ Demande nouvelle du développeur, insérée avant les itérations déjà planifiées** (2026-11-18, ~17:37, temps restant annoncé : ~30 minutes). Décale les anciennes itérations 3 et 4 (jauges/score, résultats) en 4 et 5.
+
+**❗️ Point de vigilance tranché avec le développeur** : l'itération 1 excluait explicitement l'upload de photo « pour tout le hackathon ». Le développeur confirme vouloir une version allégée — aperçu local uniquement, sans envoi ni stockage (pas de bucket S3, pas de route API) — pour rester dans le budget. Le stockage réel reste hors périmètre.
+
+- **Dans le périmètre** :
+  - Sur l'écran « Diagnostic & ressenti », un champ texte libre (« décrivez avec vos mots ce que le médecin vous a dit ») en complément des cases à cocher existantes.
+  - Juste avant la section ressenti, un sélecteur de photo qui affiche un aperçu local de l'image choisie (pas d'envoi au serveur). Les fichiers non-image sont rejetés avec un message.
+- **Hors périmètre** : l'envoi/stockage réel de la photo (bucket S3, route API) ; toute utilisation de la photo au-delà de l'aperçu.
+- **Critères d'acceptation** :
+  - Étant donné l'écran « Diagnostic & ressenti », quand on saisit un texte libre, alors il reste affiché tant qu'on ne quitte pas l'écran.
+  - Étant donné ce même écran, quand on choisit une image locale, alors son aperçu s'affiche avant la section ressenti.
+  - Étant donné un fichier qui n'est pas une image, quand on le sélectionne, alors un message de rejet s'affiche et aucun aperçu n'apparaît.
+- **Codage estimé** : 6 minutes.
+- **Tests unitaires prévus** : 1 à 2, sur la fonction de validation du type de fichier (logique pure).
+- **Temps restant annoncé au début** : ~30 minutes, demandé le 2026-11-18 à 17:37.
+- **Bilan** :
+  - Codage réel : 1 minute (pas de dépassement).
+  - Critères d'acceptation : les 3 satisfaits — le texte libre reste affiché via l'état React de `Home` ; le sélecteur de photo affiche un aperçu local (`URL.createObjectURL`, aucun envoi réseau) juste avant la section ressenti ; un fichier non-image déclenche le message de rejet sans aperçu.
+  - Reporté : aucun. Le stockage réel de la photo (bucket S3 + route API) reste explicitement hors périmètre, comme tranché avec le développeur avant codage.
+  - Bloqué par le harnais : rien — `npm test` passait (root + frontend, 2 nouveaux tests sur `estImageValide`), aucune borne de déployabilité, le hook de signal n'a pas refusé l'appel.
+  - Démo Playwright : même limite environnementale que l'itération précédente (`libnspr4.so` manquant), non bloquant. Étape « je décris la situation avec mes mots » ajoutée au script malgré tout.
+  - **Modifications** :
+    - `frontend/src/lib/media.ts` + `media.test.ts` : validation du type de fichier (2 tests) — sert le critère 3.
+    - `frontend/src/app/page.tsx` : champ texte libre et sélecteur de photo (aperçu local) ajoutés à `EcranDiagnosticRessenti`, état `description`/`apercuPhoto`/`erreurPhoto` porté par `Home` — sert les critères 1 et 2.
+    - `frontend/src/app/page.module.css` : styles du bloc texte libre et du bloc photo.
+    - `e2e/demo.spec.ts` : étape « je décris la situation avec mes mots ».
+  - Déploiement : image frontend reconstruite et poussée, `podman compose up -d --force-recreate`. Vérifié localement : `localhost:8080/` (200), `/health` et `/sante` (200).
+  - Signal PM Lab : version 3 enregistrée avec succès (`./scripts/signaler-version.sh 3`).
+  - Vérification développeur en attente : `$URL_PUBLIQUE/health` et `$URL_PUBLIQUE/sante` depuis le navigateur (non bloquant, déjà signalé).
+
+## Itération 4 : le niveau d'interrogation se règle par thème et produit un score
 
 - **Dans le périmètre** :
   - Écran « Niveau d'interrogation » : une jauge 1 à 5 par thème (douleur, fertilité, traitements, droits), valeur par défaut neutre.
   - Calcul du score par thème à partir des jauges (logique pure, testable) — pas d'affichage de résultat pour l'instant.
-- **Hors périmètre** : l'écran de résultats et les ressources (itération 4).
+- **Hors périmètre** : l'écran de résultats et les ressources (itération 5).
 - **Critères d'acceptation** :
   - Étant donné l'écran « Diagnostic & ressenti », quand on continue, alors l'écran « Niveau d'interrogation » affiche les 4 thèmes avec une jauge 1-5 chacun.
   - Étant donné des valeurs choisies sur les jauges, quand on les change, alors la valeur affichée se met à jour immédiatement.
@@ -97,12 +127,12 @@
 - **Codage estimé** : 7 minutes.
 - **Tests unitaires prévus** : 1 à 2, sur la fonction de calcul de score.
 
-## Itération 4 : les résultats affichent les ressources selon le score
+## Itération 5 : les résultats affichent les ressources selon le score
 
-- **Dans le périmètre** : écran « Résultats & ressources » — guide « Le diagnostic, et maintenant ? » toujours en premier, puis les thèmes triés par score, avec un comportement simplifié selon le score (4-5 → ressource mise en avant, < 4 → mention plus discrète). Le détail à 3 comportements du prototype (4-5 / 3 / <3) sera réduit si le temps restant après l'itération 3 est trop court (✂️ à confirmer alors).
+- **Dans le périmètre** : écran « Résultats & ressources » — guide « Le diagnostic, et maintenant ? » toujours en premier, puis les thèmes triés par score, avec un comportement simplifié selon le score (4-5 → ressource mise en avant, < 4 → mention plus discrète). Le détail à 3 comportements du prototype (4-5 / 3 / <3) sera réduit si le temps restant après l'itération 4 est trop court (✂️ à confirmer alors).
 - **Hors périmètre** : personnalisation fine du texte par thème au-delà du prototype.
 - **Critères d'acceptation** (3 au plus, à préciser au début de l'itération selon le temps restant réel) :
-  - Étant donné les scores calculés en itération 3, quand on arrive sur l'écran résultats, alors le guide général est visible en premier.
+  - Étant donné les scores calculés en itération 4, quand on arrive sur l'écran résultats, alors le guide général est visible en premier.
   - Étant donné un thème à score élevé, quand on consulte les résultats, alors sa ressource est mise en avant visuellement.
 - **Codage estimé** : 7 minutes.
 

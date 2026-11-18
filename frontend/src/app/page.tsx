@@ -4,6 +4,7 @@ import { useState } from "react";
 import styles from "./page.module.css";
 import { PROFILS, trouverProfil, type Profil } from "../lib/profils";
 import { ecranApresQualification, type ReponseDiagnostic } from "../lib/qualification";
+import { estImageValide } from "../lib/media";
 
 const MENTIONS_MEDECIN = [
   "Un traitement hormonal a été évoqué",
@@ -162,12 +163,22 @@ function EcranRenvoiSoignant({ onRetour }: { onRetour: () => void }) {
 function EcranDiagnosticRessenti({
   mentionsChoisies,
   onToggleMention,
+  description,
+  onChangerDescription,
+  apercuPhoto,
+  erreurPhoto,
+  onChoisirPhoto,
   ressentisChoisis,
   onToggleRessenti,
   onRetour,
 }: {
   mentionsChoisies: Set<string>;
   onToggleMention: (mention: string) => void;
+  description: string;
+  onChangerDescription: (description: string) => void;
+  apercuPhoto: string | null;
+  erreurPhoto: string | null;
+  onChoisirPhoto: (fichier: File) => void;
   ressentisChoisis: Set<string>;
   onToggleRessenti: (ressenti: string) => void;
   onRetour: () => void;
@@ -203,6 +214,38 @@ function EcranDiagnosticRessenti({
           </label>
         ))}
       </div>
+      <div className={styles.libreBlock}>
+        <label className={styles.libreLabel} htmlFor="description-libre">
+          Ou décrivez-le avec vos mots
+        </label>
+        <textarea
+          id="description-libre"
+          className={styles.libreTextarea}
+          value={description}
+          onChange={(e) => onChangerDescription(e.target.value)}
+          placeholder="Ce que le médecin m'a dit..."
+          rows={3}
+        />
+      </div>
+      <div className={styles.photoBlock}>
+        <label className={styles.libreLabel} htmlFor="photo-diagnostic">
+          Ajouter une photo (ex. le compte-rendu), facultatif
+        </label>
+        <input
+          id="photo-diagnostic"
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const fichier = e.target.files?.[0];
+            if (fichier) onChoisirPhoto(fichier);
+          }}
+        />
+        {erreurPhoto && <p className={styles.photoErreur}>{erreurPhoto}</p>}
+        {apercuPhoto && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={apercuPhoto} alt="Aperçu de la photo choisie" className={styles.photoApercu} />
+        )}
+      </div>
       <div className={styles.chatMessages}>
         <div className={styles.msgBot}>
           <strong>Comment vous sentez-vous face à cette nouvelle&nbsp;?</strong>
@@ -232,6 +275,9 @@ export default function Home() {
   const [profilId, setProfilId] = useState<string | null>(null);
   const [vue, setVue] = useState<Vue>("accueil");
   const [mentionsChoisies, setMentionsChoisies] = useState<Set<string>>(new Set());
+  const [description, setDescription] = useState("");
+  const [apercuPhoto, setApercuPhoto] = useState<string | null>(null);
+  const [erreurPhoto, setErreurPhoto] = useState<string | null>(null);
   const [ressentisChoisis, setRessentisChoisis] = useState<Set<string>>(new Set());
 
   const profil = profilId ? trouverProfil(profilId) : undefined;
@@ -244,6 +290,16 @@ export default function Home() {
       copie.add(valeur);
     }
     return copie;
+  }
+
+  function choisirPhoto(fichier: File) {
+    if (!estImageValide(fichier.type)) {
+      setErreurPhoto("Ce fichier n'est pas une image.");
+      setApercuPhoto(null);
+      return;
+    }
+    setErreurPhoto(null);
+    setApercuPhoto(URL.createObjectURL(fichier));
   }
 
   if (!profil) {
@@ -283,6 +339,11 @@ export default function Home() {
           onToggleMention={(mention) =>
             setMentionsChoisies((set) => basculer(set, mention))
           }
+          description={description}
+          onChangerDescription={setDescription}
+          apercuPhoto={apercuPhoto}
+          erreurPhoto={erreurPhoto}
+          onChoisirPhoto={choisirPhoto}
           ressentisChoisis={ressentisChoisis}
           onToggleRessenti={(ressenti) =>
             setRessentisChoisis((set) => basculer(set, ressenti))

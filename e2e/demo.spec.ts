@@ -28,4 +28,8 @@ test("Démo : le cas passant", async ({ page }) => {
       page.getByText("Qu'est-ce que le médecin vous a dit", { exact: false }),
     ).toBeVisible();
   });
+
+  await test.step("Je décris la situation avec mes mots", async () => {
+    await page.getByPlaceholder("Ce que le médecin m'a dit...").fill("Tout va bien se passer.");
+  });
 });
